@@ -7,7 +7,7 @@ export class OptionsReader implements TouchBackendOptions {
 	public ignoreContextMenu = false
 	public enableHoverOutsideTarget = false
 	public touchSlop = 0
-	public scrollAngleRanges: AngleRange[] | undefined = undefined
+	public scrollAngleRanges: AngleRange[] | Function | undefined = undefined
 	public delayTouchStart: number
 	public delayMouseStart: number
 	public getDropTargetElementsAtPoint?: Function

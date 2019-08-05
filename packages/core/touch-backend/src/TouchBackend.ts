@@ -2,6 +2,7 @@ import invariant from 'invariant'
 import {
 	DragDropActions,
 	DragDropMonitor,
+	HandlerRegistry,
 	Backend,
 	Identifier,
 	XYCoord,
@@ -38,6 +39,7 @@ export default class TouchBackend implements Backend {
 	// React-DnD Dependencies
 	private actions: DragDropActions
 	private monitor: DragDropMonitor
+	private registry: HandlerRegistry
 
 	// Internal State
 	private static isSetUp: boolean
@@ -63,6 +65,7 @@ export default class TouchBackend implements Backend {
 		this.options = new OptionsReader(options, context)
 		this.actions = manager.getActions()
 		this.monitor = manager.getMonitor()
+		this.registry = manager.getRegistry()
 
 		this.sourceNodes = {}
 		this.sourcePreviewNodes = {}
@@ -394,6 +397,19 @@ export default class TouchBackend implements Backend {
 		}
 
 		// If the touch move started as a scroll, or is is between the scroll angles
+		let angleRanges
+		if (
+			this.options.scrollAngleRanges instanceof Function &&
+			moveStartSourceIds
+		) {
+			const sourceTypes = moveStartSourceIds.map(source =>
+				this.registry.getSourceType(source),
+			)
+			angleRanges = this.options.scrollAngleRanges(sourceTypes)
+		} else if (!(this.options.scrollAngleRanges instanceof Function)) {
+			angleRanges = this.options.scrollAngleRanges
+		}
+
 		if (
 			this._isScrolling ||
 			(!this.monitor.isDragging() &&
@@ -402,7 +418,7 @@ export default class TouchBackend implements Backend {
 					this._mouseClientOffset.y || 0,
 					clientOffset.x,
 					clientOffset.y,
-					this.options.scrollAngleRanges,
+					angleRanges,
 				))
 		) {
 			this._isScrolling = true
